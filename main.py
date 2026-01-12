@@ -1,7 +1,14 @@
+#this only works for forward passes; check main_.py for further progress.
 import random as rd
+import numpy as np
+import math
 
 def relu(x):
     return max(0, x)
+def sMax(x):
+    x = [math.exp(i) for i in x]
+    tot = sum(x)
+    return [i/tot for i in x]
 
 class Neuron:
     def __init__(self, bias, weights):
@@ -46,4 +53,4 @@ class Neural_network:
         return inputs
     
 nn = Neural_network([3,2,3,4])
-nn.forward([0.1, 0.2, 0.3])
+print(sMax(nn.forward([0.1, 0.2, 0.3])))
