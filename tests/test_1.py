@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.io import loadmat
 
-# ---- Activation functions ----
 def relu(x):
     return np.maximum(0, x)
 
@@ -9,7 +8,6 @@ def sMax(x):
     e = np.exp(x - np.max(x))
     return e / e.sum()
 
-# ---- NumPy NN classes ----
 class Layer:
     def __init__(self, in_shape, out_shape):
         self.weights = np.random.uniform(-0.5, 0.5, (out_shape, in_shape))
@@ -29,21 +27,18 @@ class Neural_net:
                 input = relu(input)
         return input
 
-# ---- Initialize network and load pre-trained weights ----
 nn = Neural_net([784, 128, 10])
 nn.layers[0].weights = np.loadtxt("tests/test_data/fc1_weights.txt", delimiter=",")
 nn.layers[0].biases = np.loadtxt("tests/test_data/fc1_biases.txt", delimiter=",")
 nn.layers[1].weights = np.loadtxt("tests/test_data/fc2_weights.txt", delimiter=",")
 nn.layers[1].biases = np.loadtxt("tests/test_data/fc2_biases.txt", delimiter=",")
 
-# ---- Load MNIST test data ----
 mat = loadmat("data/mnist-original.mat")
 X = mat["data"].T / 255.0          # shape (70000, 784)
 y = mat["label"][0].astype(int)    # shape (70000,)
 X_test = X[60000:]                 # last 10000 samples
 y_test = y[60000:]
 
-# ---- Evaluate accuracy ----
 correct = 0
 for i in range(len(X_test)):
     sample = X_test[i]

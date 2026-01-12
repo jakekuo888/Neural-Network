@@ -6,6 +6,8 @@ def sMax(x):
     x = np.array(x)
     e = np.exp(x-np.max(x))
     return e/e.sum()
+def crossEntropy(pred, true):
+    return -np.log(pred[true]+1e-15)
 
 class Layer:
     def __init__(self, in_shape, out_shape):
@@ -26,6 +28,10 @@ class Neural_net:
         for layer in self.layers:
             input = layer.forward(input)
         return input
+    
+    def backward(self, input, true):
+        # Placeholder for backward pass
+        pass
 
 nn = Neural_net([1,2,3,4])
 test_ = np.array([0.1])
