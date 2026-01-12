@@ -8,6 +8,8 @@ def sMax(x):
     return e/e.sum()
 def crossEntropy(pred, true):
     return -np.log(pred[true]+1e-15)
+def squaredError(pred, true):
+    return np.sum((pred - true)**2)
 
 class Layer:
     def __init__(self, in_shape, out_shape):
@@ -32,7 +34,3 @@ class Neural_net:
     def backward(self, input, true):
         # Placeholder for backward pass
         pass
-
-nn = Neural_net([1,2,3,4])
-test_ = np.array([0.1])
-print(sMax(nn.forward(test_)))
