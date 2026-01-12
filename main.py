@@ -1,56 +1,32 @@
-#this only works for forward passes; check main_.py for further progress.
-import random as rd
 import numpy as np
-import math
 
 def relu(x):
-    return max(0, x)
+    return np.maximum(0, x)
 def sMax(x):
-    x = [math.exp(i) for i in x]
-    tot = sum(x)
-    return [i/tot for i in x]
-
-class Neuron:
-    def __init__(self, bias, weights):
-        self.bias = bias
-        self.weights = weights
-        self.output = 0
-
-    def forward(self, inputs):
-        s = 0
-        for i in range(len(self.weights)):
-            s += self.weights[i]*inputs[i]
-        self.output = relu(s+self.bias)
-        return self.output
+    x = np.array(x)
+    e = np.exp(x-np.max(x))
+    return e/e.sum()
 
 class Layer:
-    def __init__(self, size, n_weight):
-        self.size = size
-        self.n_weight = n_weight
-        self.neurons = []
-        for i in range(self.size):
-            n_neuron = Neuron(rd.uniform(-0.5, 0.5), [rd.uniform(-0.5, 0.5) for i in range(self.n_weight)])
-            self.neurons.append(n_neuron)
+    def __init__(self, in_shape, out_shape):
+        self.weights = np.random.uniform(-0.5, 0.5, (out_shape, in_shape))
+        self.biases = np.random.uniform(-0.5, 0.5, out_shape)
+    
+    def forward(self, input):
+        return relu(self.weights @ input + self.biases)
 
-    def forward(self, inputs):
-        return [neuron.forward(inputs) for neuron in self.neurons]
-
-class Neural_network:
+class Neural_net:
     def __init__(self, shape):
         self.shape = shape
-        self.inputs = shape[0]
         self.layers = []
-        for i in range(1, len(self.shape)):
-            size = shape[i]
-            layer = Layer(size, shape[i-1])
-            self.layers.append(layer)
-    
-    def forward(self, inputs):
+        for i in range(1, len(shape)):
+            self.layers.append(Layer(shape[i-1], shape[i]))
+
+    def forward(self, input):
         for layer in self.layers:
-            print(inputs)
-            inputs = layer.forward(inputs)
-        print(inputs)
-        return inputs
-    
-nn = Neural_network([3,2,3,4])
-print(sMax(nn.forward([0.1, 0.2, 0.3])))
+            input = layer.forward(input)
+        return input
+
+nn = Neural_net([1,2,3,4])
+test_ = np.array([0.1])
+print(sMax(nn.forward(test_)))
