@@ -1,86 +1,35 @@
+#left off @ page 107
 import numpy as np
+import nnfs
+from nnfs.datasets import spiral_data
 
-# -----------------------------
-# Activation Functions & Losses
-# -----------------------------
-def relu(x):
-    return np.maximum(0, x)
+nnfs.init()
 
-def d_relu(x):
-    # Fully vectorized derivative
-    return (x > 0).astype(float)
+class Layer_Dense:
+    def __init__(self, n_inputs, n_neurons):
+        self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)
+        self.biases = np.zeros((1, n_neurons))
 
-def sMax(x):
-    x = np.array(x, dtype=np.float64)
-    e = np.exp(x - np.max(x))  # numerical stability
-    return e / e.sum()
+    def forward(self, inputs):
+        self.output = np.dot(inputs, self.weights) + self.biases
 
-def crossEntropy(pred, true):
-    # pred: softmax probabilities
-    # true: integer label
-    return -np.log(pred[true] + 1e-15)
+class Activation_Relu:
+    def forward(self, inputs):
+        self.output = np.maximum(inputs, 0)
 
-def squaredError(pred, true):
-    return np.sum((pred - true)**2)
+class Activation_Softmax:
+    def forward(self, inputs):
+        exp_values = np.exp(inputs - np.max(inputs, axis = 1, keepdims = True))
+        self.output = exp_values / np.sum(exp_values, axis = 1, keepdims = True)
 
-# -----------------------------
-# Layer Class
-# -----------------------------
-class Layer:
-    def __init__(self, in_shape, out_shape):
-        # He initialization for ReLU
-        self.weights = np.random.randn(out_shape, in_shape) * np.sqrt(2 / in_shape)
-        self.biases = np.zeros(out_shape)
+X, y = spiral_data(samples=100, classes=3)
+dense1 = Layer_Dense(2, 3)
+activation1 = Activation_Relu()
+dense2 = Layer_Dense(3, 3)
+activation2 = Activation_Softmax()
+dense1.forward(X)
+activation1.forward(dense1.output)
+dense2.forward(activation1.output)
+activation2.forward(dense2.output)
 
-        self.input = None
-        self.z = None
-
-    def forward(self, input):
-        self.input = input
-        self.z = self.weights @ input + self.biases
-        return relu(self.z)
-
-# -----------------------------
-# Neural Network Class
-# -----------------------------
-class Neural_net:
-    def __init__(self, shape):
-        self.shape = shape
-        self.layers = [Layer(shape[i-1], shape[i]) for i in range(1, len(shape))]
-
-    def forward(self, input):
-        for layer in self.layers:
-            input = layer.forward(input)
-        return input
-
-    def predict(self, input):
-        out = self.forward(input)
-        return sMax(out)
-
-    def backward(self, input, true, l_rate=0.001):
-        # Forward pass
-        out = self.forward(input)
-        pred = sMax(out)
-
-        # Gradient at output for softmax + cross-entropy
-        grad = pred.copy()
-        grad[true] -= 1  # true is the integer label
-
-        # Backpropagation
-        for i, layer in enumerate(reversed(self.layers)):
-            # Only apply ReLU derivative for hidden layers
-            if i != 0:
-                dz = grad * d_relu(layer.z)
-            else:
-                dz = grad  # output layer
-
-            # Weight and bias gradients
-            dw = np.outer(dz, layer.input)
-            db = dz
-
-            # Gradient descent step
-            layer.weights -= l_rate * dw
-            layer.biases -= l_rate * db
-
-            # Gradient to propagate to previous layer
-            grad = layer.weights.T @ dz
+print(activation2.output[:5])
